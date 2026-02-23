@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+
+# Virtual environment
+.venv/
+
+# Test GPX files
+*.gpx
+
+# Generated outputs
+*.mp4
+*.jpg
+
+# OS
+.DS_Store

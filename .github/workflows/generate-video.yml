@@ -1,0 +1,105 @@
+name: Generate Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      gpx_url:
+        description: "Direct download URL to your GPX file"
+        required: true
+        type: string
+      duration:
+        description: "Video duration (seconds)"
+        required: false
+        type: choice
+        default: "30"
+        options:
+          - "10"
+          - "30"
+          - "60"
+          - "120"
+          - "180"
+      quality:
+        description: "Video quality"
+        required: false
+        type: choice
+        default: "fast"
+        options:
+          - fast
+          - medium
+          - high
+      format:
+        description: "Output format"
+        required: false
+        type: choice
+        default: "youtube"
+        options:
+          - youtube
+          - instagram
+          - tiktok
+          - square
+      tile_zoom:
+        description: "Map tile zoom level (higher = sharper, slower)"
+        required: false
+        type: choice
+        default: "16"
+        options:
+          - "14"
+          - "15"
+          - "16"
+          - "17"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install gpx-flyover
+        run: pip install .
+
+      - name: Cache tiles and elevation data
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/gpx-flyover
+            ~/.cache/srtm
+          key: gpx-flyover-cache-${{ inputs.tile_zoom }}
+          restore-keys: |
+            gpx-flyover-cache-
+
+      - name: Download GPX file
+        env:
+          GPX_URL: ${{ inputs.gpx_url }}
+        run: |
+          if [[ "$GPX_URL" != https://* ]]; then
+            echo "ERROR: Only HTTPS URLs are allowed" && exit 1
+          fi
+          curl -fL --proto '=https' -o input.gpx "$GPX_URL"
+
+      - name: Generate video
+        env:
+          QUALITY: ${{ inputs.quality }}
+          FORMAT: ${{ inputs.format }}
+          DURATION: ${{ inputs.duration }}
+          TILE_ZOOM: ${{ inputs.tile_zoom }}
+        run: |
+          gpx-flyover input.gpx output.mp4 \
+            --quality "$QUALITY" \
+            --format "$FORMAT" \
+            --duration "$DURATION" \
+            --tile-zoom "$TILE_ZOOM"
+
+      - name: Upload video
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpx-flyover-output
+          path: output.mp4
+          retention-days: 30
