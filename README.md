@@ -60,7 +60,7 @@ gpx-flyover route.gpx hq.mp4 --quality high --camera-distance 1500 --camera-heig
 ## Features
 
 - 3D terrain from SRTM elevation data with satellite imagery
-- Route line colored by speed (red = slow, cyan = fast)
+- Route line colored by speed (cyan → green → orange → red)
 - Real-time elevation profile chart
 - Live stats overlay (speed, distance, elevation gain)
 - Floating landmark labels (nearby POIs via OpenStreetMap)
@@ -77,7 +77,7 @@ Generate videos without installing anything — just use GitHub Actions:
    - **Note**: Strava/Komoot activity page URLs won't work — export the GPX from the app first, then upload to Google Drive.
 3. Go to **Actions** → **Generate Video** → **Run workflow**
 4. Paste the URL, choose duration/quality/format
-5. When the workflow finishes (~5-10 min), download `gpx-flyover-output` from the **Artifacts** section
+5. When the workflow finishes, download `gpx-flyover-output` from the **Artifacts** section
 
 ## Requirements
 
