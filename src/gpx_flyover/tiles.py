@@ -15,7 +15,7 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = 300_000_000  # Allow large stitched tile images (zoom 16+)
 
 TILE_SIZE = 256
-USER_AGENT = "gpx-flyover/0.2.0 (https://github.com/gpx-flyover)"
+USER_AGENT = "gpx-flyover/0.2.0"
 DEFAULT_CACHE_DIR = Path.home() / ".cache" / "gpx-flyover" / "tiles"
 
 TILE_SOURCES = {

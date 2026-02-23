@@ -17,7 +17,7 @@ OVERPASS_ENDPOINTS = [
     "https://overpass.kumi.systems/api/interpreter",
 ]
 OVERPASS_CACHE_DIR = Path.home() / ".cache" / "gpx-flyover" / "overpass"
-USER_AGENT = "gpx-flyover/0.2.0 (https://github.com/gpx-flyover)"
+USER_AGENT = "gpx-flyover/0.2.0"
 
 # ~500m in degrees (rough, good enough for padding)
 _DEG_PAD = 0.005
