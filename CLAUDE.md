@@ -44,7 +44,7 @@ Satellite tiles   → stitch → Mercator→equirect reproject → texture
 | `src/gpx_flyover/tiles.py` | ESRI satellite tile download, disk cache, parallel stitching |
 | `src/gpx_flyover/geocode.py` | Overpass API POI query, disk cache, `PlaceLabel` |
 | `src/gpx_flyover/renderer.py` | PyVista 3D rendering, texture mapping, PIL overlays, label projection |
-| `src/gpx_flyover/video.py` | FFmpeg subprocess streaming encoder (PNG→H.264) |
+| `src/gpx_flyover/video.py` | FFmpeg subprocess streaming encoder (rawvideo→H.264) |
 
 ## CLI Options
 
@@ -54,6 +54,7 @@ Satellite tiles   → stitch → Mercator→equirect reproject → texture
 | `--fps` | from preset | Override frames per second |
 | `--duration` | 60 | Video length in seconds |
 | `--quality` | medium | Preset: fast (15fps/crf23), medium (24fps/crf18), high (30fps/crf15) |
+| `--format` | — | Output preset: `instagram`/`youtube`/`tiktok`/`square`. Overrides width/height. |
 | `--camera-distance` | 3000 | Horizontal distance behind rider (meters) |
 | `--camera-height` | 1800 | Height above terrain (meters) |
 | `--terrain-exaggeration` | 1.5 | Elevation multiplier |
@@ -84,7 +85,7 @@ Use VTK's `SetWorldPoint()/WorldToDisplay()/GetDisplayPoint()` pipeline. PyVista
 |---|---|---|
 | SRTM | Elevation data | Managed by `SRTM.py` library |
 | ESRI World Imagery | Satellite tiles | `~/.cache/gpx-flyover/tiles/esri-satellite/{z}/{x}/{y}.png` |
-| Overpass API | Nearby POI/landmark query | `~/.cache/gpx-flyover/overpass/{hash}.json` |
+| Overpass API (+ kumi.systems fallback) | Nearby POI/landmark query | `~/.cache/gpx-flyover/overpass/{hash}.json` |
 | Google Fonts | Noto Sans SC (CJK) | `~/.cache/gpx-flyover/fonts/NotoSansSC-Regular.ttf` |
 
 **FFmpeg** must be installed and in PATH.
@@ -95,11 +96,6 @@ Use VTK's `SetWorldPoint()/WorldToDisplay()/GetDisplayPoint()` pipeline. PyVista
 - **Local Cartesian**: `(x_east, y_north, z_up)` in meters, relative to route center origin. Conversion: `M_PER_DEG_LAT = 111,319`, longitude scaled by `cos(origin_lat)`.
 - **Web Mercator**: For tile indexing and texture projection
 - **VTK Screen**: `(display_x, display_y, depth)` — origin bottom-left; PIL is top-left (Y-flip needed)
-
-## Test Data
-
-- `test.gpx` / `test01.gpx`: 13,732 points, Zhonghe↔Lengshui Keng cycling route through Yangmingshan, Taipei
-- `examples/sample.gpx`: 20 points, short Taipei route
 
 ## User Preferences
 
