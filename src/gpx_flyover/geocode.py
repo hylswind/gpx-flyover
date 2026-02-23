@@ -12,7 +12,10 @@ import requests
 from .gpx_parser import TrackPoint
 from .route import compute_cumulative_distances
 
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+OVERPASS_ENDPOINTS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+]
 OVERPASS_CACHE_DIR = Path.home() / ".cache" / "gpx-flyover" / "overpass"
 USER_AGENT = "gpx-flyover/0.2.0 (https://github.com/gpx-flyover)"
 
@@ -77,14 +80,24 @@ def _query_overpass(
     bbox = f"{min_lat},{min_lon},{max_lat},{max_lon}"
     query = _OVERPASS_QUERY.replace("{bbox}", bbox)
 
-    resp = session.post(
-        OVERPASS_URL,
-        data={"data": query},
-        headers={"Accept-Language": "zh-TW,en"},
-        timeout=60,
-    )
-    resp.raise_for_status()
-    elements = resp.json().get("elements", [])
+    elements = None
+    for endpoint in OVERPASS_ENDPOINTS:
+        try:
+            resp = session.post(
+                endpoint,
+                data={"data": query},
+                headers={"Accept-Language": "zh-TW,en"},
+                timeout=60,
+            )
+            resp.raise_for_status()
+            elements = resp.json().get("elements", [])
+            break
+        except (requests.RequestException, requests.Timeout):
+            continue
+
+    if elements is None:
+        print("  Warning: Overpass API unavailable, skipping landmarks")
+        return []
 
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(elements, ensure_ascii=False))
