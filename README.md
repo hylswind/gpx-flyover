@@ -71,9 +71,12 @@ gpx-flyover route.gpx hq.mp4 --quality high --camera-distance 1500 --camera-heig
 Generate videos without installing anything — just use GitHub Actions:
 
 1. **Fork** this repository
-2. **Upload** your GPX file to any file sharing service and get a direct download URL
+2. **Get a GPX file URL** — choose one of these methods:
+   - **Google Drive** (recommended): upload your `.gpx` file → right-click → Share → set to "Anyone with the link" → copy the share link. The workflow auto-converts it to a download URL.
+   - **Any direct download URL**: GitHub Gist raw URL, transfer.sh, etc.
+   - **Note**: Strava/Komoot activity page URLs won't work — export the GPX from the app first, then upload to Google Drive.
 3. Go to **Actions** → **Generate Video** → **Run workflow**
-4. Paste the GPX download URL, choose duration/quality/format
+4. Paste the URL, choose duration/quality/format
 5. When the workflow finishes (~5-10 min), download `gpx-flyover-output` from the **Artifacts** section
 
 ## Requirements

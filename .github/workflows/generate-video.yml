@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       gpx_url:
-        description: "Direct download URL to your GPX file"
+        description: "GPX file URL — supports Google Drive share links or any direct download URL"
         required: true
         type: string
       duration:
@@ -80,9 +80,46 @@ jobs:
           GPX_URL: ${{ inputs.gpx_url }}
         run: |
           if [[ "$GPX_URL" != https://* ]]; then
-            echo "ERROR: Only HTTPS URLs are allowed" && exit 1
+            echo "::error::Only HTTPS URLs are allowed" && exit 1
           fi
-          curl -fL --proto '=https' -o input.gpx "$GPX_URL"
+
+          # Convert Google Drive share links to direct download URLs
+          if [[ "$GPX_URL" =~ drive\.google\.com/file/d/([a-zA-Z0-9_-]+) ]]; then
+            FILE_ID="${BASH_REMATCH[1]}"
+            GPX_URL="https://drive.google.com/uc?export=download&id=${FILE_ID}"
+            echo "Converted Google Drive share link (file ID: ${FILE_ID})"
+          fi
+
+          echo "Downloading from: $GPX_URL"
+          curl -fL --proto '=https' --max-filesize 52428800 -o input.gpx "$GPX_URL"
+
+      - name: Validate GPX file
+        run: |
+          echo "File size: $(wc -c < input.gpx) bytes"
+          head_bytes=$(head -c 500 input.gpx)
+
+          if echo "$head_bytes" | grep -qi '<!DOCTYPE html\|<html'; then
+            echo "::error::Downloaded file is an HTML page, not a GPX file."
+            echo ""
+            echo "The URL points to a web page, not a direct file download."
+            echo ""
+            echo "How to fix:"
+            echo "  1. Export the GPX file from your app (Strava, Komoot, Garmin, etc.)"
+            echo "  2. Upload the .gpx file to Google Drive"
+            echo "  3. Right-click → Share → set to 'Anyone with the link'"
+            echo "  4. Copy the share link and paste it here"
+            exit 1
+          fi
+
+          if ! echo "$head_bytes" | grep -q '<?xml\|<gpx'; then
+            echo "::error::Downloaded file does not appear to be a GPX file."
+            echo ""
+            echo "First 200 bytes:"
+            head -c 200 input.gpx
+            exit 1
+          fi
+
+          echo "GPX file validated OK"
 
       - name: Generate video
         env:

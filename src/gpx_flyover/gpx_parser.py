@@ -6,8 +6,10 @@ from datetime import datetime
 from typing import Optional
 
 import gpxpy
+import gpxpy.gpx
 
 MAX_GPX_SIZE = 50 * 1024 * 1024  # 50 MB
+_HTML_SIGNATURES = ["<!doctype html", "<html", "<head", "<body"]
 
 
 @dataclass
@@ -27,7 +29,23 @@ def parse_gpx(file_path: str) -> list[TrackPoint]:
         )
 
     with open(file_path, "r") as f:
-        gpx = gpxpy.parse(f)
+        try:
+            gpx = gpxpy.parse(f)
+        except gpxpy.gpx.GPXXMLSyntaxException:
+            # Sniff the file to give an actionable error message
+            with open(file_path, "r", errors="replace") as sniff:
+                head = sniff.read(500).lower()
+            if any(sig in head for sig in _HTML_SIGNATURES):
+                raise ValueError(
+                    "The file appears to be an HTML web page, not a GPX file.\n"
+                    "If you downloaded this from Strava or another activity tracker,\n"
+                    "you need to export the GPX file first — the activity page URL\n"
+                    "is not a direct download link."
+                ) from None
+            raise ValueError(
+                f"Failed to parse '{file_path}' as GPX: the file is not valid XML.\n"
+                "Ensure this is a .gpx file exported from your GPS device or app."
+            ) from None
 
     points = []
     for track in gpx.tracks:
